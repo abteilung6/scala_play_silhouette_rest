@@ -1,0 +1,24 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Swagger API
+GET         /swagger.json                                                   controllers.ApiHelpController.getResources
+GET         /docs                                                           controllers.ApplicationController.redirectDocs
+
+# Home page
+GET         /                                                               controllers.ApplicationController.index
+GET         /badPassword                                                    controllers.ApplicationController.badPassword
+GET         /colors                                                         controllers.ApplicationController.colors
+
+POST        /api/auth/signin/credentials                                    controllers.CredentialsAuthController.authenticate
+POST        /api/auth/signup                                                controllers.SignUpController.signUp
+
+GET     /api/databases                      controllers.api.DatabaseController.getAll
+GET     /api/databases/:id                  controllers.api.DatabaseController.getById(id: Long)
+POST    /api/databases                      controllers.api.DatabaseController.add
+PUT     /api/databases/:id                  controllers.api.DatabaseController.update(id: Long)
+DELETE  /api/databases/:id                  controllers.api.DatabaseController.delete(id: Long)
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                                                   controllers.Assets.versioned(path="/public", file: Asset)
