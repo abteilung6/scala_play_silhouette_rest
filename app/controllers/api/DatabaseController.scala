@@ -6,6 +6,7 @@ import play.api.libs.json._
 import models.{Database, DatabaseForm}
 import play.api.data.FormError
 import com.mohiva.play.silhouette.api.Silhouette
+import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import services.DatabaseService
 import utils.auth.DefaultEnv
 
@@ -20,8 +21,9 @@ class DatabaseController @Inject()(
 
   implicit val databaseFormat = Json.format[Database]
 
-  def getAll(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
+  def getAll(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     databaseService.listAllItems map { items =>
+      print(request.identity)
       Ok(Json.toJson(items))
     }
   }
