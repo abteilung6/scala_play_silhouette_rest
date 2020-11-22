@@ -42,6 +42,19 @@ curl -X POST http://localhost:9000/api/auth/signin/credentials -H 'Content-Type:
 
 ### Secured Action with autorization
 
+_CRUD Operation on databases_
+
+```bash
+curl http://localhost:9000/api/databases -H 'X-Auth-Token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...' -v
+```
+
+```
+< HTTP/1.1 200 OK
+< Content-Type: application/json; charset=utf-8
+
+[{"id": "1", "name": "test", "engine": "mysql", "status": "available}]
+```
+
 _The token must belong to a user with Admin role_
 
 ```bash
