@@ -24,6 +24,7 @@ class DatabaseController @Inject()(
   def getAll(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     databaseService.listAllItems map { items =>
       print(request.identity)
+      print(request.authenticator)
       Ok(Json.toJson(items))
     }
   }
@@ -34,7 +35,7 @@ class DatabaseController @Inject()(
     }
   }
 
-  def add(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def add(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
     DatabaseForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => {
@@ -47,7 +48,7 @@ class DatabaseController @Inject()(
       })
   }
 
-  def update(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def update(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
     DatabaseForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => {
@@ -60,9 +61,9 @@ class DatabaseController @Inject()(
       })
   }
 
-  def delete(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def delete(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
     databaseService.deleteItem(id) map { res =>
-      Ok("")
+      Ok(Json.toJson("{}"))
     }
   }
 }
