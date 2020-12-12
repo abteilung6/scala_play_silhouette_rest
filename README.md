@@ -82,6 +82,61 @@ Slick evolutions are responsible for data reloading.
 
 Documentation is available under address: [REST API](http://localhost:9000/docs)
 
+## Install deprecated scala things
+```
+apt-get install software-properties-common
+apt-add-repository 'deb http://security.debian.org/debian-security stretch/updates main'
+apt-get update
+apt-get install openjdk-8-jdk
+apt-get install git
+curl -L -o sbt.deb http://dl.bintray.com/sbt/debian/sbt-1.0.3.deb
+dpkg -i sbt.deb
+apt-get update
+apt-get install sbt
+apt-get install bc
+git clone https://github.com/abteilung6/scala_play_silhouette_rest.git
+```
+
+## Install MySQL Server
+```
+apt install gnupg
+wget https://dev.mysql.com/get/mysql-apt-config_0.8.13-1_all.deb
+# Select MySQL Server & Cluster 8.0
+apt update
+apt install mysql-server
+# Use Strong Password Encryption
+systemctl status mysql
+mysql_secure_installation
+# remove anonymous user
+# disallow remote root login
+# drop test database
+# reload privilege tables
+mysql -u root -p
+GRANT ALL PRIVILEGES ON *.* TO 'username'@'localhost' IDENTIFIED BY 'password';
+# change username and password
+CREATE DATABASE 'auth';
+GRANT ALL PRIVILEGES ON auth . * TO 'username'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+## Configure settings in conf/application.conf
+```
+play.filters.hosts {
+  # Allow requests to example.com, its subdomains, and localhost:9000.
+  allowed = ["localhost:9000"]
+}
+```
+
+## Production
+```
+cd scala_play_silhouette_rest.git
+sbt dist
+unzip target/universal/play-silhouette-rest-slick-1.0.zip
+play-silhouette-rest-slick-1.0/bin/play-silhouette-rest-slick -Dplay.http.secret.key=CHANGEME
+# CHANGEME needs 32 characters
+```
+
 # License
 
 The code is licensed under [Apache License v2.0](http://www.apache.org/licenses/LICENSE-2.0). 
+
