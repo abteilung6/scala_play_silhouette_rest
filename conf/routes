@@ -17,7 +17,6 @@ POST        /api/auth/signup                                                cont
 GET     /api/databases                      controllers.api.DatabaseController.getAll
 GET     /api/databases/:id                  controllers.api.DatabaseController.getById(id: Long)
 POST    /api/databases                      controllers.api.DatabaseController.add
-PUT     /api/databases/:id                  controllers.api.DatabaseController.update(id: Long)
 DELETE  /api/databases/:id                  controllers.api.DatabaseController.delete(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path

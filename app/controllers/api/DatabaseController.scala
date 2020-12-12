@@ -7,7 +7,7 @@ import models.{Database, DatabaseForm}
 import play.api.data.FormError
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
-import services.DatabaseService
+import service.DatabaseService
 import utils.auth.DefaultEnv
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,9 +22,8 @@ class DatabaseController @Inject()(
   implicit val databaseFormat = Json.format[Database]
 
   def getAll(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
-    databaseService.listAllItems map { items =>
-      print(request.identity)
-      print(request.authenticator)
+    val owner: String = request.authenticator.loginInfo.providerKey
+    databaseService.listAllItems(owner) map { items =>
       Ok(Json.toJson(items))
     }
   }
@@ -35,34 +34,24 @@ class DatabaseController @Inject()(
     }
   }
 
-  def add(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
+  def add(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     DatabaseForm.form.bindFromRequest.fold(
-      // if any error in submitted data
       errorForm => {
         errorForm.errors.foreach(println)
         Future.successful(BadRequest("Error!"))
       },
       data => {
-        val newDatabaseItem = Database(0, data.name, data.engine, data.status)
+        val owner: String = request.authenticator.loginInfo.providerKey
+        val engine: String = "PostgreSQL"
+        val status: String = "Available"
+        val newDatabaseItem = Database(0, data.name, engine, status, owner)
         databaseService.addItem(newDatabaseItem).map(database => Ok(Json.toJson(database)))
       })
   }
 
-  def update(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
-    DatabaseForm.form.bindFromRequest.fold(
-      // if any error in submitted data
-      errorForm => {
-        errorForm.errors.foreach(println)
-        Future.successful(BadRequest("Error!"))
-      },
-      data => {
-        val databaseItem = Database(id, data.name, data.engine, data.status)
-        databaseService.updateItem(id, databaseItem).map(_ => Ok(Json.toJson(databaseItem)))
-      })
-  }
-
-  def delete(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: Request[AnyContent] =>
-    databaseService.deleteItem(id) map { res =>
+  def delete(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
+    val owner: String = request.authenticator.loginInfo.providerKey
+    databaseService.deleteItem(id, owner) map { res =>
       Ok(Json.toJson("{}"))
     }
   }

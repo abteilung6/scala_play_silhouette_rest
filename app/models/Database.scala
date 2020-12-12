@@ -9,16 +9,14 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.MySQLProfile.api._
 
-case class Database(id: Long, name: String, engine: String, status: String)
+case class Database(id: Long, name: String, engine: String, status: String, owner: String)
 
-case class DatabaseFormData(name: String, engine: String, status: String)
+case class DatabaseFormData(name: String)
 
 object DatabaseForm {
   val form = Form(
     mapping(
       "name" -> nonEmptyText,
-      "engine" -> nonEmptyText,
-      "status" -> nonEmptyText,
     )(DatabaseFormData.apply)(DatabaseFormData.unapply)
   )
 }
@@ -33,7 +31,9 @@ class DatabaseTableDef(tag: Tag) extends Table[Database](tag, "database") {
 
   def status = column[String]("status")
 
-  override def * = (id, name, engine, status) <> (Database.tupled, Database.unapply)
+  def owner = column[String]("owner")
+
+  override def * = (id, name, engine, status, owner) <> (Database.tupled, Database.unapply)
 }
 
 
@@ -51,24 +51,15 @@ class DatabaseList @Inject()(
     dbConfig.db.run(action).map(d => d)
   }
 
-  def delete(id: Long): Future[Int] = {
-    dbConfig.db.run(databaseList.filter(_.id === id).delete)
-  }
-
-  def update(id: Long, databaseItem: Database): Future[Int] = {
-    dbConfig.db
-      .run(
-        databaseList.filter(_.id === id)
-        .map(x => (x.name, x.engine, x.status))
-        .update(databaseItem.name, databaseItem.engine, databaseItem.status)
-      )
+  def delete(id: Long, owner: String): Future[Int] = {
+    dbConfig.db.run(databaseList.filter(_.id === id).filter(_.owner === owner).delete)
   }
 
   def get(id: Long): Future[Option[Database]] = {
     dbConfig.db.run(databaseList.filter(_.id === id).result.headOption)
   }
 
-  def listAll: Future[Seq[Database]] = {
-    dbConfig.db.run(databaseList.result)
+  def listAll(owner: String): Future[Seq[Database]] = {
+    dbConfig.db.run(databaseList.filter(_.owner === owner).result)
   }
 }

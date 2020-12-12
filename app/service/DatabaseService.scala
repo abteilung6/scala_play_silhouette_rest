@@ -1,4 +1,4 @@
-package services
+package service
 
 import com.google.inject.Inject
 import models.{Database, DatabaseList}
@@ -11,19 +11,15 @@ class DatabaseService @Inject() (items: DatabaseList) {
     items.add(item)
   }
 
-  def deleteItem(id: Long): Future[Int] = {
-    items.delete(id)
-  }
-
-  def updateItem(id: Long, item: Database): Future[Int] = {
-    items.update(id, item)
+  def deleteItem(id: Long, owner: String): Future[Int] = {
+    items.delete(id, owner)
   }
 
   def getItem(id: Long): Future[Option[Database]] = {
     items.get(id)
   }
 
-  def listAllItems: Future[Seq[Database]] = {
-    items.listAll
+  def listAllItems(owner: String): Future[Seq[Database]] = {
+    items.listAll(owner)
   }
 }
