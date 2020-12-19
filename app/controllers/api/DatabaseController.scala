@@ -4,18 +4,23 @@ import javax.inject._
 import play.api.mvc._
 import play.api.libs.json._
 import models.{Database, DatabaseForm}
-import play.api.data.FormError
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import service.DatabaseService
+import service.DatabaseConnectorService
 import utils.auth.DefaultEnv
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+
+import scala.concurrent.{Await}
+
 
 class DatabaseController @Inject()(
                                     cc: ControllerComponents,
                                     databaseService: DatabaseService,
+                                    databaseConnectorService: DatabaseConnectorService,
                                     silhouette: Silhouette[DefaultEnv]
                                   ) extends AbstractController(cc) {
 
@@ -45,13 +50,20 @@ class DatabaseController @Inject()(
         val engine: String = "PostgreSQL"
         val status: String = "Available"
         val newDatabaseItem = Database(0, data.name, engine, status, owner)
+        databaseConnectorService.createDatabase(data.name)
         databaseService.addItem(newDatabaseItem).map(database => Ok(Json.toJson(database)))
       })
   }
 
   def delete(id: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     val owner: String = request.authenticator.loginInfo.providerKey
-    databaseService.deleteItem(id, owner) map { res =>
+    val item = databaseService.getItem(id)
+    val result = Await.result(item, Duration.Inf).get
+    if (result.owner == owner) {
+      databaseConnectorService.deleteDatabase(result.name)
+      databaseService.deleteItem(id, owner)
+    }
+    Future {
       Ok(Json.toJson("{}"))
     }
   }

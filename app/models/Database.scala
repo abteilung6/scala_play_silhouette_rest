@@ -9,6 +9,9 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.MySQLProfile.api._
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 case class Database(id: Long, name: String, engine: String, status: String, owner: String)
 
 case class DatabaseFormData(name: String)

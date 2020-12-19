@@ -55,7 +55,7 @@ class SignUpController @Inject()(components: ControllerComponents,
       val loginInfo = LoginInfo(CredentialsProvider.ID, signUp.identifier)
       userService.retrieve(loginInfo).flatMap {
         case None => /* user not already exists */
-          val user = User(None, loginInfo, loginInfo.providerKey, signUp.email, signUp.firstName, signUp.lastName, None, true)
+          val user = User(None, loginInfo, loginInfo.providerKey, signUp.email, signUp.firstName, signUp.lastName, None, activated = true)
           // val plainPassword = UUID.randomUUID().toString.replaceAll("-", "")
           val authInfo = passwordHasherRegistry.current.hash(signUp.password)
           for {
