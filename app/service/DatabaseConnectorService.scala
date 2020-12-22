@@ -16,6 +16,11 @@ class DatabaseConnectorService @Inject()(
                                         )(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
+  /**
+   * Checks if database exists
+   * @param databaseName name of database
+   * @return true if database exists
+   */
   def databaseExists(databaseName: String): Boolean = {
     var result = false
     try {
@@ -29,6 +34,11 @@ class DatabaseConnectorService @Inject()(
     return result
   }
 
+  /**
+   * Create a database
+   * @param databaseName the name of database
+   * @return true if the database was created
+   */
   def createDatabase(databaseName: String): Boolean = {
     var result = false
     try {
@@ -42,6 +52,11 @@ class DatabaseConnectorService @Inject()(
     return result
   }
 
+  /**
+   * Deletes a database if the database exists
+   * @param databaseName the name of the database
+   * @return true if database was deleted
+   */
   def deleteDatabase(databaseName: String): Boolean = {
     var result = false
     try {
@@ -53,6 +68,42 @@ class DatabaseConnectorService @Inject()(
       case e: Exception => e.printStackTrace
     }
     return result
+  }
 
+  /**
+   * Checks if username exists
+   * @param username the username
+   * @return true if username exists
+   */
+  def userExists(username: String): Boolean = {
+    var result = false;
+    try {
+      val query = Await.result(dbConfig.db.run(sql"""SELECT COUNT(*) FROM mysql.user where user=${username}""".as[(Int)]), Duration.Inf)
+      if (query.nonEmpty && query.contains(1)) {
+        result = true
+      }
+    } catch {
+      case e: Exception => e.printStackTrace
+    }
+    return result
+  }
+
+  /**
+   * Creates a databse user
+   * @param username the name of user
+   * @param password the password of user
+   * @return true  if user was created
+   */
+  def createUser(username: String, password: String): Boolean = {
+    var result = false
+    try {
+      val query = Await.result(dbConfig.db.run(sql"""CREATE USER ${username} IDENTIFIED BY ${password}""".as[(Int)]), Duration.Inf)
+      if (query.nonEmpty && query.contains(0)) {
+        result = true
+      }
+    } catch {
+      case e: Exception => e.printStackTrace
+    }
+    return result
   }
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import javax.inject.Inject
-
 import com.mohiva.play.silhouette.api._
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services.AvatarService
@@ -15,7 +14,7 @@ import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.{JsError, Json}
 import play.api.libs.mailer.{Email, MailerClient}
 import play.api.mvc.{AbstractController, ControllerComponents}
-import service.UserService
+import service.{DatabaseConnectorService, UserService}
 import utils.auth.DefaultEnv
 import utils.responses.rest.Bad
 
@@ -32,7 +31,9 @@ class SignUpController @Inject()(components: ControllerComponents,
                                  passwordHasherRegistry: PasswordHasherRegistry,
                                  avatarService: AvatarService,
                                  mailerClient: MailerClient,
-                                 messagesApi: MessagesApi)
+                                 messagesApi: MessagesApi,
+                                 databaseConnectorService: DatabaseConnectorService,
+                                )
                                 (implicit ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
 
   implicit val credentialFormat = CredentialFormat.restFormat
@@ -68,6 +69,10 @@ class SignUpController @Inject()(components: ControllerComponents,
               Ok(Json.toJson(Token(token = token, expiresOn = authenticator.expirationDateTime)))
             )
           } yield {
+            if (!databaseConnectorService.userExists(loginInfo.providerKey)) {
+              databaseConnectorService.createUser(loginInfo.providerKey, signUp.password)
+            }
+
             val url = routes.ApplicationController.index().absoluteURL()
             mailerClient.send(Email(
               subject = Messages("email.sign.up.subject"),
