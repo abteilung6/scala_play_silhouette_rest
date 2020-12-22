@@ -107,9 +107,33 @@ class DatabaseConnectorService @Inject()(
     return result
   }
 
+  /**
+   * Grants user access to a database
+   * @param databaseName name of database
+   * @param username name of user
+   * @return true if database granted access to user
+   */
   def databaseGrantUser(databaseName: String, username: String): Boolean = {
     var result = false;
     val statement = sql"""GRANT ALL PRIVILEGES ON #${databaseName}.* TO ${username}"""
+    try {
+      val query = Await.result(dbConfig.db.run(statement.as[(Int)]), Duration.Inf)
+      if (query.nonEmpty && query.contains(0)) {
+        result = true
+      }
+    } catch {
+      case e: Exception => e.printStackTrace
+    }
+    return result
+  }
+
+  /**
+   * Flush privileges
+   * @return true if success
+   */
+  def flushPrivileges(): Boolean = {
+    var result = false;
+    val statement = sql"""FLUSH PRIVILEGES"""
     try {
       val query = Await.result(dbConfig.db.run(statement.as[(Int)]), Duration.Inf)
       if (query.nonEmpty && query.contains(0)) {

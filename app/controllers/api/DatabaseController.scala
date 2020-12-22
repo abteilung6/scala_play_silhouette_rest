@@ -53,6 +53,7 @@ class DatabaseController @Inject()(
         val newDatabaseItem = Database(0, name, engine, status, owner)
         databaseConnectorService.createDatabase(name)
         databaseConnectorService.databaseGrantUser(name, owner)
+        databaseConnectorService.flushPrivileges()
         databaseService.addItem(newDatabaseItem).map(database => Ok(Json.toJson(database)))
       })
   }
