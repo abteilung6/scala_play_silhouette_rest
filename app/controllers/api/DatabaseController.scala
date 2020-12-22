@@ -47,10 +47,11 @@ class DatabaseController @Inject()(
       },
       data => {
         val owner: String = request.authenticator.loginInfo.providerKey
+        val name: String = owner + "_" + data.name
         val engine: String = "PostgreSQL"
         val status: String = "Available"
-        val newDatabaseItem = Database(0, data.name, engine, status, owner)
-        databaseConnectorService.createDatabase(data.name)
+        val newDatabaseItem = Database(0, name, engine, status, owner)
+        databaseConnectorService.createDatabase(name)
         databaseService.addItem(newDatabaseItem).map(database => Ok(Json.toJson(database)))
       })
   }
