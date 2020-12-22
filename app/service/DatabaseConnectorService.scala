@@ -106,4 +106,18 @@ class DatabaseConnectorService @Inject()(
     }
     return result
   }
+
+  def databaseGrantUser(databaseName: String, username: String): Boolean = {
+    var result = false;
+    val statement = sql"""GRANT ALL PRIVILEGES ON #${databaseName}.* TO ${username}"""
+    try {
+      val query = Await.result(dbConfig.db.run(statement.as[(Int)]), Duration.Inf)
+      if (query.nonEmpty && query.contains(0)) {
+        result = true
+      }
+    } catch {
+      case e: Exception => e.printStackTrace
+    }
+    return result
+  }
 }

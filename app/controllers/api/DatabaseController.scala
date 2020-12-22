@@ -52,6 +52,7 @@ class DatabaseController @Inject()(
         val status: String = "Available"
         val newDatabaseItem = Database(0, name, engine, status, owner)
         databaseConnectorService.createDatabase(name)
+        databaseConnectorService.databaseGrantUser(name, owner)
         databaseService.addItem(newDatabaseItem).map(database => Ok(Json.toJson(database)))
       })
   }
